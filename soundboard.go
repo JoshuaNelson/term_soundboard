@@ -60,12 +60,20 @@ func main() {
 	draw_soundboard(v_header, top_tree)
 	termbox.Flush()
 
+	var ch_bug []rune
 loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Key == termbox.KeyCtrlX {
 				break loop
+			}
+			if ev.Ch == 'c' {
+				ch_bug = append(ch_bug, ev.Ch)
+				ch_bug[0] = ev.Ch
+				v_header = string(ch_bug[0])
+			} else {
+				v_header = "Voice"
 			}
 			termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 			draw_soundboard(v_header, top_tree)
