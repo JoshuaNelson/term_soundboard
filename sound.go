@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/bobertlo/go-mpg123/mpg123"
 	"github.com/gordonklaus/portaudio"
@@ -74,4 +75,5 @@ func playMp3(fileName string) {
 		default:
 		}
 	}
+	time.Sleep(time.Second * 3)
 }
