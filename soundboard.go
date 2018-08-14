@@ -7,23 +7,28 @@ import (
 
 type MenuItem interface {
 	choose()
-	draw() int
+	draw(x, y int) int
 }
 
 type Tree struct {
 	key rune
 	description string
 	expanded bool
-	children []*Tree
+	children []MenuItem
 }
 
 func (t Tree) choose() {
 	t.expanded = true
 }
 
-func (t Tree) draw() int {
-	draw_cell(0, 0, 't')
-	return 1
+func (t Tree) draw(x, y int) int {
+	totalSubTreeLength := 0
+
+	drawCell(x, y-1, 0x252C)
+
+	drawText(x+3, y, string(t.key) + ": " + t.description)
+
+	return totalSubTreeLength + 1
 }
 
 type Sound struct {
@@ -36,50 +41,48 @@ func (s Sound) choose() {
 	playMp3(s.path)
 }
 
-func (s Sound) draw() int {
-	draw_cell(0, 0, 's')
+func (s Sound) draw(x, y int) int {
+	drawText(x, y, string(s.key) + " " + s.description)
 	return 1
 }
 
-var topMenu = []MenuItem {
-	Tree{ 'M', "Menu", false, nil},
-	Sound{ 'S', "Sound", "/home/joshuanelsn/Downloads/zadoc_scream_1.mp3"},
+var topMenu = []MenuItem{
+	Tree{'G', "Global",      false, global_tree},
+	Tree{'Z', "Zadoc Allen", false, zadoc_tree},
+	Tree{'A', "Attack",      false, nil},
+	Tree{'D', "Defend",      false, nil},
+	Tree{'R', "Repair",      false, repair_tree},
+	Tree{'B', "Base",        false, nil},
 }
 
-var v_header string = "Voice"
-
-var top_tree = []*Tree {
-	{'G', "Global", false, global_tree},
-	{'A', "Attack", false, nil},
-	{'D', "Defend", false, nil},
-	{'R', "Repair", false, repair_tree},
-	{'B', "Base",   false, nil},
+var global_tree = []MenuItem{
+	Tree{'T', "Test",        false, action_tree},
+	Tree{'A', "Action",      false, nil},
+	Tree{'S', "Super",       false, super_tree},
 }
 
-var global_tree = []*Tree {
-	{'T', "Test",   false, action_tree},
-	{'A', "Action", false, nil},
-	{'S', "Super",  false, super_tree},
+var zadoc_tree = []MenuItem{
+	Sound{'S', "Scream", "/home/joshuanelsn/Downloads/zadoc_scream_1.mp3"},
 }
 
-var super_tree = []*Tree {
-	{'C', "Cheer", false, nil},
-	{'L', "Laugh", false, nil},
-	{'W', "Wave",  false, nil},
+var super_tree = []MenuItem {
+	Tree{'C', "Cheer",       false, nil},
+	Tree{'L', "Laugh",       false, nil},
+	Tree{'W', "Wave",        false, nil},
 }
 
-var action_tree = []*Tree {
-	{'W', "Wave",  false, nil},
-	{'T', "Taunt", false, nil},
+var action_tree = []MenuItem {
+	Tree{'W', "Wave",        false, nil},
+	Tree{'T', "Taunt",       false, nil},
 }
 
-var attack_tree = []*Tree {
-	{'F', "Flag", false, nil},
+var attack_tree = []MenuItem {
+	Tree{'F', "Flag",        false, nil},
 }
 
-var repair_tree = []*Tree {
-	{'F', "Flag", false, nil},
-	{'B', "Base", false, nil},
+var repair_tree = []MenuItem {
+	Tree{'F', "Flag",        false, nil},
+	Tree{'B', "Base",        false, nil},
 }
 
 func main() {
@@ -89,14 +92,14 @@ func main() {
 	}
 	defer termbox.Close()
 
-	var cur_rune_map []rune
+	var runePath []rune
 
 	termbox.SetInputMode(termbox.InputEsc | termbox.InputMouse)
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	draw_soundboard(v_header, top_tree, cur_rune_map)
+	drawMenu(runePath)
 	termbox.Flush()
 
-	var select_vtree []*Tree = top_tree
+	var selectMenu *[]MenuItem = &topMenu
 loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -105,18 +108,18 @@ loop:
 				break loop
 			}
 
-			select_vtree = rune_to_tree(ev.Ch, select_vtree)
-			if select_vtree == nil {
-				select_vtree = top_tree
-				unexpand_tree(top_tree)
-				cur_rune_map = cur_rune_map[:0]
+			//selectMenu = rune_to_tree(ev.Ch, selectMenu)
+			if selectMenu == nil {
+				selectMenu = &topMenu
+				//unexpand_tree(topMenu)
+				runePath = runePath[:0]
 			} else {
-				cur_rune_map = append(cur_rune_map,
+				runePath = append(runePath,
 				    unicode.ToUpper(ev.Ch))
 			}
 
 			termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-			draw_soundboard(v_header, top_tree, cur_rune_map)
+			drawMenu(runePath)
 			termbox.Flush()
 		case termbox.EventError:
 			panic(ev.Err)
