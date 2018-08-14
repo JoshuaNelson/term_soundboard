@@ -17,10 +17,13 @@ func draw_cell(x, y int, ch rune) {
 	termbox.SetCell(x, y, ch, termbox.ColorWhite, termbox.ColorDefault)
 }
 
-func draw_soundboard(header string, vtree []*voice_tree, rune_map []rune) {
+func draw_soundboard(header string, vtree []*Tree, rune_map []rune) {
 	draw_h1(header)
 	draw_voice_tree(vtree, 1)
 	draw_cur_rune_map(rune_map)
+	for _, item := range topMenu {
+		item.draw()
+	}
 	reset_draw()
 }
 
@@ -51,7 +54,7 @@ func draw_h1(header string) {
 	draw_y++
 }
 
-func draw_voice_tree (tree []*voice_tree, level int) int {
+func draw_voice_tree (tree []*Tree, level int) int {
 	//As we draw down, increase max_y
 	level++
 	loc_x := draw_margin + 1 + level
@@ -69,11 +72,11 @@ func draw_voice_tree (tree []*voice_tree, level int) int {
 		draw_cell(loc_x-2, draw_y, 0x2500)
 
 		// Draw Shortcut Key
-		draw_cell(loc_x, draw_y, vtree.menu.key)
+		draw_cell(loc_x, draw_y, vtree.key)
 		draw_cell(loc_x+1, draw_y, ':')
 
 		// Draw Name
-		for idx, letter := range vtree.menu.descrip {
+		for idx, letter := range vtree.description {
 			draw_cell(loc_x+3+idx, draw_y, letter)
 		}
 
@@ -81,8 +84,8 @@ func draw_voice_tree (tree []*voice_tree, level int) int {
 
 		// Draw Subtree and Line Extension
 		len_subtrees := 0
-		if vtree.tree != nil && vtree.expanded == true {
-			len_subtrees += draw_voice_tree(vtree.tree, level)
+		if vtree.children != nil && vtree.expanded == true {
+			len_subtrees += draw_voice_tree(vtree.children, level)
 			total_len_subtrees += len_subtrees
 			if last_line { continue }
 			// Draw Line Extension
@@ -102,22 +105,22 @@ func draw_cur_rune_map (rune_map []rune) {
 	}
 }
 
-func rune_to_tree(ch rune, vtree []*voice_tree) []*voice_tree {
-	for _, child_tree := range vtree {
-		if ch == child_tree.menu.key ||
-		    ch == unicode.ToLower(child_tree.menu.key) {
-			child_tree.expanded = true
-			return child_tree.tree
+func rune_to_tree(ch rune, vtree []*Tree) []*Tree{
+	for _, child := range vtree {
+		if ch == child.key ||
+		    ch == unicode.ToLower(child.key) {
+			child.expanded = true
+			return child.children
 		}
 	}
 	return nil
 }
 
-func unexpand_tree(vtree []*voice_tree) {
-	for _, child_tree := range vtree {
-		if child_tree.tree != nil {
-			unexpand_tree(child_tree.tree)
-			child_tree.expanded = false
+func unexpand_tree(vtree []*Tree) {
+	for _, child := range vtree {
+		if child.children != nil {
+			unexpand_tree(child.children)
+			child.expanded = false
 		}
 	}
 }

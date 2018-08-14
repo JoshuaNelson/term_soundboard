@@ -12,7 +12,7 @@ import (
 
 var mp3_path string = "/home/joshuanelsn/Downloads/zadoc_scream_1.mp3"
 
-func mp3_play (fileName string) {
+func playMp3(fileName string) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, os.Kill)
 

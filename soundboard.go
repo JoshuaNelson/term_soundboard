@@ -5,51 +5,81 @@ import (
 	"unicode"
 )
 
-type voice_menu struct {
-	key rune
-	descrip string
+type MenuItem interface {
+	choose()
+	draw() int
 }
 
-type voice_tree struct {
-	menu voice_menu
-	tree []*voice_tree
+type Tree struct {
+	key rune
+	description string
 	expanded bool
+	children []*Tree
+}
+
+func (t Tree) choose() {
+	t.expanded = true
+}
+
+func (t Tree) draw() int {
+	draw_cell(0, 0, 't')
+	return 1
+}
+
+type Sound struct {
+	key rune
+	description string
+	path string
+}
+
+func (s Sound) choose() {
+	playMp3(s.path)
+}
+
+func (s Sound) draw() int {
+	draw_cell(0, 0, 's')
+	return 1
+}
+
+var topMenu = []MenuItem {
+	Tree{ 'M', "Menu", false, nil},
+	Sound{ 'S', "Sound", "/home/joshuanelsn/Downloads/zadoc_scream_1.mp3"},
 }
 
 var v_header string = "Voice"
 
-var top_tree = []*voice_tree {
-	{voice_menu{'G', "Global"}, global_tree, false},
-	{voice_menu{'A', "Attack"}, nil, false},
-	{voice_menu{'D', "Defend"}, nil, false},
-	{voice_menu{'R', "Repair"}, repair_tree, false},
-	{voice_menu{'B', "Base"}, nil, false},
+var top_tree = []*Tree {
+	{'G', "Global", false, global_tree},
+	{'A', "Attack", false, nil},
+	{'D', "Defend", false, nil},
+	{'R', "Repair", false, repair_tree},
+	{'B', "Base",   false, nil},
 }
 
-var global_tree = []*voice_tree {
-	{voice_menu{'T', "Test"}, action_tree, false},
-	{voice_menu{'A', "Action"}, nil, false},
-	{voice_menu{'S', "Super"}, super_tree, false},
+var global_tree = []*Tree {
+	{'T', "Test",   false, action_tree},
+	{'A', "Action", false, nil},
+	{'S', "Super",  false, super_tree},
 }
 
-var super_tree = []*voice_tree {
-	{voice_menu{'C', "Cheer"}, nil, false},
-	{voice_menu{'L', "Laugh"}, nil, false},
-	{voice_menu{'W', "Wave"}, nil, false},
+var super_tree = []*Tree {
+	{'C', "Cheer", false, nil},
+	{'L', "Laugh", false, nil},
+	{'W', "Wave",  false, nil},
 }
 
-var action_tree = []*voice_tree {
-	{voice_menu{'W', "Wave"}, nil, false},
-	{voice_menu{'T', "Taunt"}, nil, false},
+var action_tree = []*Tree {
+	{'W', "Wave",  false, nil},
+	{'T', "Taunt", false, nil},
 }
 
-var attack_tree = []*voice_tree {
-	{voice_menu{'F', "Flag"}, nil, false},
+var attack_tree = []*Tree {
+	{'F', "Flag", false, nil},
 }
 
-var repair_tree = []*voice_tree {
-	{voice_menu{'F', "Flag"}, nil, false},
-	{voice_menu{'B', "Base"}, nil, false},
+var repair_tree = []*Tree {
+	{'F', "Flag", false, nil},
+	{'B', "Base", false, nil},
 }
 
 func main() {
@@ -66,7 +96,7 @@ func main() {
 	draw_soundboard(v_header, top_tree, cur_rune_map)
 	termbox.Flush()
 
-	var select_vtree []*voice_tree = top_tree
+	var select_vtree []*Tree = top_tree
 loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
