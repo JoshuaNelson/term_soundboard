@@ -118,7 +118,9 @@ var soundMenu = Item{topMenu}
 
 var topMenu = []MenuItem{
 	&Tree{'K', "Kanye West",  false, Item{kanye_tree}},
+	&Tree{'S', "Sea of Thieves", false, Item{sot_tree}},
 	&Tree{'Z', "Zadoc Allen", false, Item{zadoc_tree}},
+
 }
 
 var soundPath string = "/home/joshuanelsn/Downloads/soundboard/"
@@ -140,6 +142,12 @@ var zadoc_tree = []MenuItem{
 	Sound{'L', "Get out for your life!", soundPath + "zadoc_getoutforyerlife.mp3"},
 	Sound{'Y', "Yeeowhhaa", soundPath + "zadoc_scream_1.mp3"},
 	Sound{'A', "Auuuugghh", soundPath + "zadoc_scream_2.mp3"},
+}
+
+var sot_tree = []MenuItem{
+	Sound{'A', "Drop Anchor", soundPath + "anchor.mp3"},
+	Sound{'M', "Megaladon Rush", soundPath + "meg_rushingwater.mp3"},
+	Sound{'S', "Megaladon SpawnUnder", soundPath + "meg_spawn_under.mp3"},
 }
 
 func selectTree(ch rune, item Item) Item {
